@@ -1,13 +1,14 @@
-# 资源下载
+# IDEA进行Tomcat源码调试
+## 资源下载
 > * 下载源码并解压到目录`${tomcat.source}`。我这里下载的是`tomcat-8.5.34`，下载地址：https://tomcat.apache.org/download-80.cgi
 > * 下载JDK并并配置环境,需设置`JAVA_HOME`变量。
 > * 下载`ant1.9.8`或以上版本，解压后配置环境变量，下载地址：https://ant.apache.org/bindownload.cgi
 
-# 编译构建
+## 编译构建
 > 在`${tomcat.source}`目录中找到`build.properties.default`文件，找到`base.path=${user.home}/tomcat-build-libs`配置，该配置是构建需要的类库，建议将该目录放在与`${tomcat.source}`目录不同的路径中，我的配置：`base.path=D:/git/tomcat-8.5.34-src/tomcat-build-libs`。然后将文件改名为`build.properties`，`cmd`进入`${tomcat.source}`目录，输入`ant`命令开始构建
 ，`build`成功后如下，在`${tomcat.source}`目录下出现`out`目录。
 
-# 导入IDEA
+## 导入IDEA
 > * 编译完成可以看到在原来解压目录下生成了一个`output`文件夹，`output`中有`build`文件夹
 > * 在源码根目录下增加`pom.xml`文件
 ```xml
