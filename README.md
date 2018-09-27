@@ -1,79 +1,190 @@
-## Welcome to Apache Tomcat!
+# 资源下载
+> * 下载源码并解压到目录`${tomcat.source}`。我这里下载的是`tomcat-8.5.34`，下载地址：https://tomcat.apache.org/download-80.cgi
+> * 下载JDK并并配置环境,需设置`JAVA_HOME`变量。
+> * 下载`ant1.9.8`或以上版本，解压后配置环境变量，下载地址：https://ant.apache.org/bindownload.cgi
 
-### What Is It?
+# 编译构建
+> 在`${tomcat.source}`目录中找到`build.properties.default`文件，找到`base.path=${user.home}/tomcat-build-libs`配置，该配置是构建需要的类库，建议将该目录放在与`${tomcat.source}`目录不同的路径中，我的配置：`base.path=D:/git/tomcat-8.5.34-src/tomcat-build-libs`。然后将文件改名为`build.properties`，`cmd`进入`${tomcat.source}`目录，输入`ant`命令开始构建
+，`build`成功后如下，在`${tomcat.source}`目录下出现`out`目录。
 
-The Apache Tomcat® software is an open source implementation of the Java
-Servlet, JavaServer Pages, Java Expression Language and Java WebSocket
-technologies. The Java Servlet, JavaServer Pages, Java Expression Language and
-Java WebSocket specifications are developed under the
-[Java Community Process](https://jcp.org/en/introduction/overview).
+# 导入IDEA
+> * 编译完成可以看到在原来解压目录下生成了一个`output`文件夹，`output`中有`build`文件夹
+> * 在源码根目录下增加`pom.xml`文件
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-The Apache Tomcat software is developed in an open and participatory
-environment and released under the
-[Apache License version 2](https://www.apache.org/licenses/). The Apache Tomcat
-project is intended to be a collaboration of the best-of-breed developers from
-around the world. We invite you to participate in this open development
-project. To learn more about getting involved,
-[click here](https://tomcat.apache.org/getinvolved.html) or keep reading.
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.apache.tomcat</groupId>
+    <artifactId>Tomcat8.0</artifactId>
+    <name>Tomcat8.5</name>
+    <version>8.0</version>
 
-Apache Tomcat software powers numerous large-scale, mission-critical web
-applications across a diverse range of industries and organizations. Some of
-these users and their stories are listed on the
-[PoweredBy wiki page](https://wiki.apache.org/tomcat/PoweredBy).
+    <build>
+        <finalName>Tomcat8.0</finalName>
+        <sourceDirectory>java</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>java</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>test</directory>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-Apache Tomcat, Tomcat, Apache, the Apache feather, and the Apache Tomcat
-project logo are trademarks of the Apache Software Foundation.
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>3.4</version>
+        </dependency>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jaxrpc</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <artifactId>ecj</artifactId>
+            <version>4.5.1</version>
+        </dependency>
+    </dependencies>
+</project>
 
-### Get It
+```  
+> * 以`maven`项目导入`idea`中。
+> * 在`test.util`包下增加类`CookieFilter`。
+```java 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package util;
 
-For every major Tomcat version there is one download page containing
-links to the latest binary and source code downloads, but also
-links for browsing the download directories and archives:
-- [Tomcat 9](https://tomcat.apache.org/download-90.cgi)
-- [Tomcat 8](https://tomcat.apache.org/download-80.cgi)
-- [Tomcat 7](https://tomcat.apache.org/download-70.cgi)
+import java.util.Locale;
+import java.util.StringTokenizer;
 
-To facilitate choosing the right major Tomcat version one, we have provided a
-[version overview page](https://tomcat.apache.org/whichversion.html).
+/**
+ * Processes a cookie header and attempts to obfuscate any cookie values that
+ * represent session IDs from other web applications. Since session cookie names
+ * are configurable, as are session ID lengths, this filter is not expected to
+ * be 100% effective.
+ *
+ * It is required that the examples web application is removed in security
+ * conscious environments as documented in the Security How-To. This filter is
+ * intended to reduce the impact of failing to follow that advice. A failure by
+ * this filter to obfuscate a session ID or similar value is not a security
+ * vulnerability. In such instances the vulnerability is the failure to remove
+ * the examples web application.
+ */
+public class CookieFilter {
 
-### Documentation
+    private static final String OBFUSCATED = "[obfuscated]";
 
-The documentation available as of the date of this release is
-included in the docs webapp which ships with tomcat. You can access that webapp
-by starting tomcat and visiting http://localhost:8080/docs/ in your browser.
-The most up-to-date documentation for each version can be found at:
-- [Tomcat 9](https://tomcat.apache.org/tomcat-9.0-doc/)
-- [Tomcat 8](https://tomcat.apache.org/tomcat-8.5-doc/)
-- [Tomcat 7](https://tomcat.apache.org/tomcat-7.0-doc/)
+    private CookieFilter() {
+        // Hide default constructor
+    }
 
-### Installation
+    public static String filter(String cookieHeader, String sessionId) {
 
-Please see [RUNNING.txt](RUNNING.txt) for more info.
+        StringBuilder sb = new StringBuilder(cookieHeader.length());
 
-### Licensing
+        // Cookie name value pairs are ';' separated.
+        // Session IDs don't use ; in the value so don't worry about quoted
+        // values that contain ;
+        StringTokenizer st = new StringTokenizer(cookieHeader, ";");
 
-Please see [LICENSE](LICENSE) for more info.
+        boolean first = true;
+        while (st.hasMoreTokens()) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(';');
+            }
+            sb.append(filterNameValuePair(st.nextToken(), sessionId));
+        }
 
-### Support and Mailing List Information
 
-* Free community support is available through the
-[tomcat-users](https://tomcat.apache.org/lists.html#tomcat-users) email list and
-a dedicated [IRC channel](https://tomcat.apache.org/irc.html) (#tomcat on
-Freenode).
+        return sb.toString();
+    }
 
-* If you want freely available support for running Apache Tomcat, please see the
-resources page [here](https://tomcat.apache.org/findhelp.html).
+    private static String filterNameValuePair(String input, String sessionId) {
+        int i = input.indexOf('=');
+        if (i == -1) {
+            return input;
+        }
+        String name = input.substring(0, i);
+        String value = input.substring(i + 1, input.length());
 
-* If you want to be informed about new code releases, bug fixes,
-security fixes, general news and information about Apache Tomcat, please
-subscribe to the
-[tomcat-announce](https://tomcat.apache.org/lists.html#tomcat-announce) email
-list.
+        return name + "=" + filter(name, value, sessionId);
+    }
 
-* If you have a concrete bug report for Apache Tomcat, please see the
-instructions for reporting a bug
-[here](https://tomcat.apache.org/bugreport.html).
+    public static String filter(String cookieName, String cookieValue, String sessionId) {
+        if (cookieName.toLowerCase(Locale.ENGLISH).contains("jsessionid") &&
+                (sessionId == null || !cookieValue.contains(sessionId))) {
+            cookieValue = OBFUSCATED;
+        }
 
-### Contributing
+        return cookieValue;
+    }
+}
+```
+> * 使用`maven`工具 `clean and install` 跳过`test`构建完成。
+> - 增加一个`run Application`选项
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for more info.
+>  Name：Bootstrap
+
+> Main Class：org.apache.catalina.startup.Bootstrap
+
+> VM options：-Dcatalina.home="D:\Users\Tomcat8.0\output\build"
+> 路径即为ant构建之后生成的output目录中的build目录路径
+
+>其他正常配置即可
+
+> * 运行`Application`中的`Bootstrap`，`Tomcat`即可正常启动
